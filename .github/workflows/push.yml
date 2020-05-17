@@ -1,0 +1,47 @@
+name: Daily WWW clrmamepro profiles
+
+on:
+    push:
+    schedule:
+        - cron:  '0 12 * * *'
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Setup Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.8
+
+        - name: Install pipenv
+          run: sudo pip install pipenv
+
+        - name: Install dependencies using Pipenv
+          run: pipenv install --deploy --system
+
+        - name: Download dats and generate profile.xml
+          id: generator_redump
+          run: python3 redump.py
+
+        - name: Download dats and generate profile.xml
+          id: generator_no_intro
+          run: python3 no-intro.py
+
+        - name: Upload assets to release
+          uses: meeDamian/github-release@2.0
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            tag: latest
+            name: latest
+            allow_override: true
+            gzip: false
+            files: >
+                redump.xml
+                redump.zip
+                no-intro.xml
+                no-intro.zip

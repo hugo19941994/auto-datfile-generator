@@ -1,0 +1,5 @@
+*.pyc
+*.xml
+*.dat
+*.zip
+.DS_Store
