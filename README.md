@@ -16,6 +16,19 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/redump.xml`
 
-![clrmamepro screenshot](./clrmamepro.png)
+![clrmamepro screenshot](./img/clrmamepro.png)
 
 Project inspired by [redump-xml-updater](https://github.com/bilakispa/redump-xml-updater)
+
+## Header support
+
+Some No-Intro dats require an extra XML file to detect headers.
+
+![clrmamepro header warning screenshot](./img/headers.png)
+
+Download the following zips, extract them and place the XML files in clrmamepro's `headers` folder:
+
+- [Atari Jaguar](https://datomatic.no-intro.org/stuff/header_a7800.zip)
+- [Atari Lynx](https://datomatic.no-intro.org/stuff/header_lynx.zip)
+- [Nintendo FDS](https://datomatic.no-intro.org/stuff/header_fds.zip)
+- [Nintendo NES](https://datomatic.no-intro.org/stuff/header_nes.zip)
