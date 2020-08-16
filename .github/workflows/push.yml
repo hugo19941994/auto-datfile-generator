@@ -22,15 +22,15 @@ jobs:
           run: sudo pip install pipenv
 
         - name: Install dependencies using Pipenv
-          run: pipenv install --deploy --system
+          run: pipenv install --deploy
 
         - name: Download dats and generate profile.xml
           id: generator_redump
-          run: python3 redump.py
+          run: pipenv run python3 redump.py
 
         - name: Download dats and generate profile.xml
           id: generator_no_intro
-          run: python3 no-intro.py
+          run: pipenv run python3 no-intro.py
 
         - name: Upload assets to release
           uses: meeDamian/github-release@2.0
