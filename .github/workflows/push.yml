@@ -32,6 +32,10 @@ jobs:
           id: generator_no_intro
           run: pipenv run python3 no-intro.py
 
+        - name: Download dats and generate profile.xml
+          id: generator_smdb
+          run: pipenv run python3 smdb.py
+
         - name: Upload assets to release
           uses: meeDamian/github-release@2.0
           with:
@@ -44,4 +48,6 @@ jobs:
                 redump.xml
                 redump.zip
                 no-intro.xml
+                smdb.zip
+                smdb.xml
                 no-intro.zip
