@@ -42,7 +42,7 @@ def downloadNoIntro():
     # Request daily DAT pack
     s = requests.Session()  # session to maintain cookies
     r = s.post("https://datomatic.no-intro.org/index.php?page=download&op=daily",
-               data={"dat_type": "standard", "prepare_2": "Prepare"}, headers=headers, allow_redirects=False)
+               data={"dat_type": "standard", "prepare_4": "Prepare", "recaptcha_response": ""}, headers=headers, allow_redirects=False)
     r.raise_for_status()
 
     # Extract download ID from the 302 response Location header
@@ -50,7 +50,7 @@ def downloadNoIntro():
 
     # Download the DAT pack
     r = s.post(f"https://datomatic.no-intro.org/index.php?page=manager&download={download_id}",
-               data={"download": "Download"}, headers=headers, allow_redirects=True)
+               params={"page": "manager", "download": download_id}, data={"wtwtwtf": "Download"}, headers=headers, allow_redirects=True)
     r.raise_for_status()
 
     # get zip filename
