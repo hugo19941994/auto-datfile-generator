@@ -4,3 +4,4 @@
 *.zip
 .DS_Store
 EverDrive-Packs-Lists-Database/
+geckodriver.log

@@ -1,10 +1,11 @@
 from datetime import date
-import xml.etree.ElementTree as ET
 from io import BytesIO
-import re
+from time import sleep
+from selenium import webdriver
 import logging
 import os
-import requests
+import re
+import xml.etree.ElementTree as ET
 import zipfile
 
 regex = {
@@ -14,97 +15,84 @@ regex = {
 }
 xml_filename = 'no-intro.xml'
 
+# Dowload no-intro pack using selenium
+dir_path = os.path.dirname(os.path.realpath(__file__))
+fx_profile = webdriver.FirefoxProfile();
+fx_profile.set_preference("browser.download.folderList", 2);
+fx_profile.set_preference("browser.download.manager.showWhenStarting", False);
+fx_profile.set_preference("browser.download.dir", dir_path);
+fx_profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip");
 
-def downloadNoIntro():
-    logging.info("Downloading No-Intro DATs")
+options = webdriver.FirefoxOptions()
+options.headless = True
 
-    headers = {
-        "Accept": ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,"
-                   "application/signed-exchange;v=b3;q=0.9"),
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-US,en;q=0.9,es;q=0.8,it;q=0.7",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "DNT": "1",
-        "Host": "datomatic.no-intro.org",
-        "Origin": "https://datomatic.no-intro.org",
-        "Pragma": "no-cache",
-        "Referer": "https://datomatic.no-intro.org/index.php?page=download&op=daily",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-User": "?1",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                       "Chrome/79.0.3945.117 Safari/537.36")
-    }
+driver = webdriver.Firefox(firefox_profile=fx_profile, options=options);
+driver.implicitly_wait(10)
 
-    # Request daily DAT pack
-    s = requests.Session()  # session to maintain cookies
-    r = s.post("https://datomatic.no-intro.org/index.php?page=download&op=daily",
-               data={"dat_type": "standard", "sometimes-I-change-this-too": "Prepare", "recaptcha_response": ""}, headers=headers, allow_redirects=False)
-    r.raise_for_status()
+driver.get("https://datomatic.no-intro.org")
+driver.find_element_by_xpath('/html/body/div/header/nav/ul/li[3]/a').click()
+driver.find_element_by_xpath('/html/body/div/section/article/table[1]/tbody/tr/td/a[6]').click()
+driver.find_element_by_xpath('/html/body/div/section/article/div/form/input[1]').click()
+driver.find_element_by_xpath('/html/body/div/section/article/div/form/input').click()
 
-    # Extract download ID from the 302 response Location header
-    download_id = r.headers["Location"].rsplit("=", 1)[-1]
+# wait until file is found
+found = False
+name = None
+time_slept = 0
+while not found:
+    if time_slept > 360:
+        raise Exception('No-Intro zip file not found')
 
-    # Download the DAT pack
-    r = s.post(f"https://datomatic.no-intro.org/index.php?page=manager&download={download_id}",
-               params={"page": "manager", "download": download_id}, data={"wtwtwtf": "Download"}, headers=headers, allow_redirects=True)
-    r.raise_for_status()
+    for f in os.listdir(dir_path):
+        if 'No-Intro Love Pack' in f:
+            name = f
+            found = True
+            break
 
-    # get zip filename
-    content_header = r.headers['Content-Disposition']
-    zipName = re.findall(regex['filename'], content_header)[0]
-    print(zipName)
-    #with open(zipName, 'wb') as f:
-    with open('no-intro.zip', 'wb') as f:
-        f.write(r.content)
+    # wait 5 seconds
+    sleep(5)
+    time_slept += 5
 
-    # Load zip file into memory
-    zipdata = BytesIO()
-    zipdata.write(r.content)
-    archive = zipfile.ZipFile(zipdata)
+os.rename(name, f'{dir_path}/no-intro.zip')
 
-    # clrmamepro XML file
-    tag_clrmamepro = ET.Element('clrmamepro')
-    for dat in archive.namelist():
-        print(dat)
-        # section for this dat in the XML file
-        tag_datfile = ET.SubElement(tag_clrmamepro, 'datfile')
+# load zip file
+archive = zipfile.ZipFile(f'{dir_path}/no-intro.zip')
 
-        # XML version
-        dat_date = re.findall(regex['date'], dat)[0]
-        ET.SubElement(tag_datfile, 'version').text = dat_date
-        print(dat_date)
+# clrmamepro XML file
+tag_clrmamepro = ET.Element('clrmamepro')
+for dat in archive.namelist():
+    print(dat)
+    # section for this dat in the XML file
+    tag_datfile = ET.SubElement(tag_clrmamepro, 'datfile')
 
-        # XML name & description
-        tempName = re.findall(regex['name'], dat)[0][0]
-        ET.SubElement(tag_datfile, 'name').text = tempName
-        ET.SubElement(tag_datfile, 'description').text = tempName
-        print(tempName)
+    # XML version
+    dat_date = re.findall(regex['date'], dat)[0]
+    ET.SubElement(tag_datfile, 'version').text = dat_date
+    print(dat_date)
 
-        # URL tag in XML
-        ET.SubElement(
-            tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.zip'
-            #tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/{zipName}'
+    # XML name & description
+    tempName = re.findall(regex['name'], dat)[0][0]
+    ET.SubElement(tag_datfile, 'name').text = tempName
+    ET.SubElement(tag_datfile, 'description').text = tempName
+    print(tempName)
 
-        # File tag in XML
-        fileName = dat
-        fileName = f'{fileName[:-4]}.dat'
-        ET.SubElement(tag_datfile, 'file').text = fileName
-        print(fileName)
+    # URL tag in XML
+    ET.SubElement(
+        tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.zip'
 
-        # Author tag in XML
-        ET.SubElement(tag_datfile, 'author').text = 'redump.org'
+    # File tag in XML
+    fileName = dat
+    fileName = f'{fileName[:-4]}.dat'
+    ET.SubElement(tag_datfile, 'file').text = fileName
+    print(fileName)
 
-        # Command XML tag
-        ET.SubElement(tag_datfile, 'comment').text = '_'
+    # Author tag in XML
+    ET.SubElement(tag_datfile, 'author').text = 'redump.org'
 
-    # store clrmamepro XML file
-    xmldata = ET.tostring(tag_clrmamepro).decode()
-    xmlfile = open(xml_filename, 'w')
-    xmlfile.write(xmldata)
+    # Command XML tag
+    ET.SubElement(tag_datfile, 'comment').text = '_'
 
-
-downloadNoIntro()
+# store clrmamepro XML file
+xmldata = ET.tostring(tag_clrmamepro).decode()
+xmlfile = open(xml_filename, 'w')
+xmlfile.write(xmldata)
