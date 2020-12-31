@@ -120,6 +120,9 @@ folder = './EverDrive-Packs-Lists-Database/EverDrive Pack SMDBs'
 for f in os.listdir(folder):
     file_date = subprocess.run(['git','--no-pager', 'log', '-1', '--pretty="format:%ci"', f], capture_output=True, cwd=folder).stdout.decode('utf-8')[8:-2]
     txt_date = datetime.strptime(file_date,'%Y-%m-%d %H:%M:%S %z')
+    if '.txt' not in f:
+        # manual packs in 7z
+        continue
     name = f.replace('.txt', '')
     with open(f'{folder}/{f}') as txt:
         generate(txt, name, txt_date, zf)
