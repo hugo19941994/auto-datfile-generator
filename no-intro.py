@@ -87,7 +87,7 @@ for dat in archive.namelist():
     print(fileName)
 
     # Author tag in XML
-    ET.SubElement(tag_datfile, 'author').text = 'redump.org'
+    ET.SubElement(tag_datfile, 'author').text = 'no-intro.org'
 
     # Command XML tag
     ET.SubElement(tag_datfile, 'comment').text = '_'
