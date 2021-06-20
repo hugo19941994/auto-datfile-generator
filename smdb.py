@@ -27,7 +27,8 @@ def generate(txt, platform, txt_date, zf):
 
     # Get Saturn supplement
     for line in txt:
-        sha256, name, sha1, md5, crc32 = line.split('\t')
+        # Some have a sixth columen with the rom size
+        sha256, name, sha1, md5, crc32 = line.split('\t')[:5]
 
         rom_name = name[name.find('/', name.find('/') + 1) + 1:].replace('/', '\\')
         name = name[name.find('/') + 1:name.find('/', name.find('/') + 1)].replace('/', '\\')
