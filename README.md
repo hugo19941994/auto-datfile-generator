@@ -12,6 +12,10 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.xml`
 
+### No-Intro (parent-clone)
+
+`https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.parent-clone.xml`
+
 ### Redump
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/redump.xml`

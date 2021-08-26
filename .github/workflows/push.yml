@@ -45,8 +45,8 @@ jobs:
             allow_override: true
             gzip: false
             files: >
-                no-intro(standard).xml
-                no-intro(standard).zip
+                no-intro.xml
+                no-intro.zip
                 no-intro(parent-clone).xml
                 no-intro(parent-clone).zip
                 redump.xml
