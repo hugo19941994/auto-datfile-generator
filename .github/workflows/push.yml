@@ -10,6 +10,11 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+        - name: Set workflow variables
+          id: step_one
+          run: |
+            echo "timestamp=$(date +%s)" >> $GITHUB_ENV
+
         - name: Checkout code
           uses: actions/checkout@v2
 
@@ -40,8 +45,8 @@ jobs:
           uses: meeDamian/github-release@2.0
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
-            tag: latest
-            name: latest
+            tag: ${{ env.timestamp }}
+            name: ${{ env.timestamp }}
             allow_override: true
             gzip: false
             files: >
