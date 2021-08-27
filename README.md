@@ -10,19 +10,19 @@ Refreshes once every 24h automatically.
 
 ### No-Intro
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/no-intro.xml`
 
 ### No-Intro (parent-clone)
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/no-intro.parent-clone.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/no-intro.parent-clone.xml`
 
 ### Redump
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/redump.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.xml`
 
 ### Smokemonster supplemental packs
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/smdb.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml`
 
 ![clrmamepro screenshot](./img/clrmamepro.png)
 
