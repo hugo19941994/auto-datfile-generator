@@ -80,7 +80,7 @@ def generate(txt, platform, txt_date, zf):
     description = etree.SubElement(df, 'description')
     description.text = platform
     url_xml = etree.SubElement(df, 'url')
-    url_xml.text = 'https://github.com/hugo19941994/auto-datfile-generator/releases/download/latest/smdb.zip'
+    url_xml.text = 'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.zip'
     file_xml = etree.SubElement(df, 'file')
     file_xml.text = f'datfile_{platform.replace(" ", "_").lower()}.dat'
     author_xml = etree.SubElement(df, 'author')
