@@ -29,17 +29,21 @@ jobs:
         - name: Install dependencies using Pipenv
           run: pipenv install --deploy
 
-        - name: Download dats and generate profile.xml
+        - name: Download dats and generate profile.xml for Redump
           id: generator_redump
           run: pipenv run python3 redump.py
 
-        - name: Download dats and generate profile.xml
+        - name: Download dats and generate profile.xml for No-Intro
           id: generator_no_intro
           run: pipenv run python3 no-intro.py
 
-        - name: Download dats and generate profile.xml
+        - name: Download dats and generate profile.xml for HTGD
           id: generator_smdb
           run: pipenv run python3 smdb.py
+
+        - name: Download dats and generate profile.xml for dats.site
+          id: generator_dats_site
+          run: pipenv run python3 dats-site.py
 
         - name: Upload assets to release
           uses: meeDamian/github-release@2.0
