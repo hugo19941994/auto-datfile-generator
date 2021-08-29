@@ -20,7 +20,7 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.xml`
 
-### Smokemonster supplemental packs
+### Hardware Target Game Database
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml`
 
