@@ -58,3 +58,5 @@ jobs:
                 redump.zip
                 smdb.zip
                 smdb.xml
+                dats-site.xml
+                dats-site.zip

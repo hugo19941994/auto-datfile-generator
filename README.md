@@ -24,6 +24,10 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml`
 
+### Custom dats.site
+
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/dats-site.xml`
+
 ![clrmamepro screenshot](./img/clrmamepro.png)
 
 Project inspired by [redump-xml-updater](https://github.com/bilakispa/redump-xml-updater)
