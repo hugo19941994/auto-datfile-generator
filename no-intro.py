@@ -1,7 +1,11 @@
-from time import sleep
+from PIL import Image
+from colormath.color_conversions import convert_color
+from colormath.color_diff import delta_e_cie1976
+from colormath.color_objects import LabColor, sRGBColor
 from selenium import webdriver
-from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import Select
+from time import sleep
 import hashlib
 import os
 import re
@@ -71,22 +75,33 @@ for key, value in no_intro_type.items():
                 continue
         else:
             # download the captcha image
-            image = requests.get(captcha_image, stream=True).raw
+            image = Image.open(requests.get(captcha_image, stream=True).raw).convert('RGB')
+            image.show()
+            # Resize to get average color
+            image = image.resize((1, 1))
+            color = image.getpixel((0, 0))
 
-            # hash the image
-            hasher = hashlib.md5()
-            buf = image.read()
-            hasher.update(buf)
-            hash = hasher.hexdigest()
+            # Instantiate an sRGBColor object and convert to lab to check deltas
+            color_rgb = sRGBColor(rgb_r=color[0], rgb_g=color[1], rgb_b=color[2], is_upscaled=True)
+            color_lab = convert_color(color_rgb, LabColor)
 
-            hash_map = {
-                '402240d761cb146915b25a01c771c6a9': 'dwnl_blue',
-                '3fe379d46842ffed389aa9bbeb42bb93': 'dwnl_red',
-                '1e3ad98f1290f8ba0d3fc21f313f5396': 'dwnl_yellow'
-            }
+            # Get colors from the buttons
+            buttons_dict = {}
+            buttons = driver.find_elements_by_xpath("/html/body/div/section/article/div/form/input[@type='submit']")
+            for btn in buttons:
+                # Extract color from the button's background css property
+                r, g, b = btn.value_of_css_property("background-color")[4:-1].split(', ')
+                btn_rgb = sRGBColor(rgb_r=int(r), rgb_g=int(g), rgb_b=int(b), is_upscaled=True)
+                btn_lab = convert_color(btn_rgb, LabColor)
+
+                # get difference of color between button and captcha_image
+                delta_e = delta_e_cie1976(btn_lab, color_lab)
+
+                buttons_dict[btn.get_attribute('name')] = delta_e
+            closest_button_name = min(buttons_dict, key=buttons_dict.get)
 
             # click the correct captcha color coded download button
-            driver.find_element_by_name(hash_map[hash]).click()
+            driver.find_element_by_name(closest_button_name).click()
 
 
         # wait until file is found

@@ -10,6 +10,8 @@ requests = "*"
 lxml = "*"
 chardet = "*"
 selenium = "*"
+colormath = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.9"
