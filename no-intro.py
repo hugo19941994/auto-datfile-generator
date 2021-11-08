@@ -76,7 +76,6 @@ for key, value in no_intro_type.items():
         else:
             # download the captcha image
             image = Image.open(requests.get(captcha_image, stream=True).raw).convert('RGB')
-            image.show()
             # Resize to get average color
             image = image.resize((1, 1))
             color = image.getpixel((0, 0))
