@@ -46,7 +46,7 @@ jobs:
           run: pipenv run python3 dats-site.py
 
         - name: Upload assets to release
-          uses: meeDamian/github-release@2.0
+          uses: hugo19941994/github-release@master
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
             tag: ${{ env.timestamp }}
