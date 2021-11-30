@@ -67,12 +67,13 @@ for key, value in no_intro_type.items():
             captcha = True
         except NoSuchElementException:
             pass
+        print(f'Captcha: {captcha}')
 
         if not captcha:
-            try:
-                driver.find_element_by_name('dwnl').click()
-            except NoSuchElementException:
-                continue
+            buttons = driver.find_elements_by_xpath("/html/body/div/section/article/div/form/input[@type='submit']")
+            if len(buttons) == 1:
+                btn_name = buttons[0].get_attribute('name')
+                driver.find_element_by_name(btn_name).click()
         else:
             # download the captcha image
             image = Image.open(requests.get(captcha_image, stream=True).raw).convert('RGB')
@@ -112,21 +113,25 @@ for key, value in no_intro_type.items():
                 raise Exception(f'No-Intro {key} zip file not found')
 
             for f in os.listdir(dir_path):
-                if 'No-Intro Love Pack' in f:
-                    name = f
-                    found = True
-                    break
+                if 'No-Intro Love Pack' in f and not f.endswith('.part'):
+                    try:
+                        zipfile.ZipFile(os.path.join(dir_path, f))
+                        name = f
+                        found = True
+                        break
+                    except zipfile.BadZipfile:
+                        pass
 
             # wait 5 seconds
             sleep(5)
             time_slept += 5
 
         archive_name = 'no-intro.zip' if key == 'standard' else f'no-intro({key}).zip'
-        archive_full = f'{dir_path}/{archive_name}'
-        os.rename(name, archive_full)
+        archive_full = os.path.join(dir_path, archive_name)
+        os.rename(os.path.join(dir_path, name), os.path.join(dir_path, archive_full))
 
         # load zip file
-        archive = zipfile.ZipFile(archive_full)
+        archive = zipfile.ZipFile(os.path.join(dir_path, archive_full))
 
         # clrmamepro XML file
         tag_clrmamepro = ET.Element('clrmamepro')
