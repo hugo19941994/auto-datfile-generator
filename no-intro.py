@@ -126,7 +126,7 @@ for key, value in no_intro_type.items():
             sleep(5)
             time_slept += 5
 
-        archive_name = 'no-intro.zip' if key == 'standard' else f'no-intro({key}).zip'
+        archive_name = 'no-intro.zip' if key == 'standard' else f'no-intro_{key}.zip'
         archive_full = os.path.join(dir_path, archive_name)
         os.rename(os.path.join(dir_path, name), os.path.join(dir_path, archive_full))
 
@@ -169,6 +169,6 @@ for key, value in no_intro_type.items():
 
         # store clrmamepro XML file
         xmldata = ET.tostring(tag_clrmamepro).decode()
-        xml_filename = 'no-intro.xml' if key == 'standard' else f'no-intro({key}).xml'
+        xml_filename = 'no-intro.xml' if key == 'standard' else f'no-intro_{key}.xml'
         xmlfile = open(xml_filename, 'w')
         xmlfile.write(xmldata)
