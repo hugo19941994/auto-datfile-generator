@@ -45,22 +45,13 @@ jobs:
           id: generator_dats_site
           run: pipenv run python3 dats-site.py
 
-        - name: Upload assets to release
-          uses: hugo19941994/github-release@master
+        - name: Create release
+          uses: ncipollo/release-action@v1
           with:
+            name: Nightly
+            tag: Nightly
+            artifacts: "*.xml,*.zip"
             token: ${{ secrets.GITHUB_TOKEN }}
-            tag: ${{ env.timestamp }}
-            name: ${{ env.timestamp }}
-            allow_override: true
-            gzip: false
-            files: >
-                no-intro.xml
-                no-intro.zip
-                no-intro(parent-clone).xml
-                no-intro(parent-clone).zip
-                redump.xml
-                redump.zip
-                smdb.zip
-                smdb.xml
-                dats-site.xml
-                dats-site.zip
+            allowUpdates: true
+            body: Released by github actions
+            commit: master
