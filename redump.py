@@ -91,27 +91,6 @@ def Update_XML():
         print()
         sleep(5)
 
-    # Add the Wii dat from gc-forever
-    print("Adding Wii dat from gc-forever")
-    r = requests.get('https://www.gc-forever.com/datfile/wii.dat')
-    r.raise_for_status()
-    tree = objectify.parse(StringIO(r.text))
-
-    name = tree.getroot().header.name.text
-    description = tree.getroot().header.description.text
-    version = tree.getroot().header.version.text
-
-    tag_datfile = ET.SubElement(tag_clrmamepro, 'datfile')
-    ET.SubElement(tag_datfile, 'version').text = version
-    ET.SubElement(tag_datfile, 'name').text = name
-    ET.SubElement(tag_datfile, 'description').text = name
-    ET.SubElement(tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.zip'
-    ET.SubElement(tag_datfile, 'file').text = f"{description}.dat"
-    ET.SubElement(tag_datfile, 'author').text = 'redump.org'
-    ET.SubElement(tag_datfile, 'comment').text = '_'
-
-    zipObj.writestr(f"{description}.dat", r.text)
-
     # store clrmamepro XML file
     xmldata = ET.tostring(tag_clrmamepro).decode()
     xmlfile = open(xml_filename, 'w')
