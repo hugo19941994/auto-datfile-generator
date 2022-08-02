@@ -4,6 +4,9 @@ from colormath.color_diff import delta_e_cie1976
 from colormath.color_objects import LabColor, sRGBColor
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import Firefox
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import Select
 from time import sleep
 import hashlib
@@ -14,8 +17,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 regex = {
-    'date': r'[0-9]{8}-[0-9]*',
-    'name': r'(.*?.)( \([0-9]{8}-[0-9]*\).dat)',
+    'date': r'[0-9]{8}-[0-9]{6}',
+    'name': r'(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)',
     'filename': r'filename="(.*?)"',
 }
 
@@ -28,28 +31,28 @@ for key, value in no_intro_type.items():
 
         # Dowload no-intro pack using selenium
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        fx_profile = webdriver.FirefoxProfile();
-        fx_profile.set_preference("browser.download.folderList", 2);
-        fx_profile.set_preference("browser.download.manager.showWhenStarting", False);
-        fx_profile.set_preference("browser.download.dir", dir_path);
-        fx_profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip");
-
-        options = webdriver.FirefoxOptions()
+        options=Options()
+        options.set_preference("browser.download.folderList", 2);
+        options.set_preference("browser.download.manager.showWhenStarting", False);
+        options.set_preference("browser.download.dir", dir_path);
+        options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip");
         options.headless = True
 
-        driver = webdriver.Firefox(firefox_profile=fx_profile, options=options);
+        service = Service()
+
+        driver = webdriver.Firefox(service=service, options=options)
         driver.implicitly_wait(10)
 
         driver.get("https://datomatic.no-intro.org")
 
         # select downloads
-        driver.find_element_by_xpath('/html/body/div/header/nav/ul/li[3]/a').click()
+        driver.find_element(by='xpath', value='/html/body/div/header/nav/ul/li[3]/a').click()
 
         # select daily downloads
-        driver.find_element_by_xpath('/html/body/div/section/article/table[1]/tbody/tr/td/a[6]').click()
+        driver.find_element(by='xpath', value='/html/body/div/section/article/table[1]/tbody/tr/td/a[5]').click()
 
         # find the type of dat file
-        x = driver.find_element_by_name('dat_type')
+        x = driver.find_element(by='name', value='dat_type')
         drop = Select(x)
 
         # Select by value
@@ -57,23 +60,22 @@ for key, value in no_intro_type.items():
         sleep(5)
 
         # click the prepare button
-        driver.find_element_by_xpath(f'/html/body/div/section/article/div/form/input[1]').click()
+        driver.find_element(by='xpath', value=f'/html/body/div/section/article/div/form/input[1]').click()
 
         captcha = False
 
         try:
-            captcha_image = driver.find_element_by_xpath('/html/body/div/section/article/div/form/img').get_attribute(
-                'src')
+            captcha_image = driver.find_element(by='xpath', value='/html/body/div/section/article/div/form/img').get_attribute('src')
             captcha = True
         except NoSuchElementException:
             pass
         print(f'Captcha: {captcha}')
 
         if not captcha:
-            buttons = driver.find_elements_by_xpath("/html/body/div/section/article/div/form/input[@type='submit']")
+            buttons = driver.find_elements(by='xpath', value="/html/body/div/section/article/div/form/input[@type='submit']")
             if len(buttons) == 1:
                 btn_name = buttons[0].get_attribute('name')
-                driver.find_element_by_name(btn_name).click()
+                driver.find_element(by='name', value=btn_name).click()
         else:
             # download the captcha image
             image = Image.open(requests.get(captcha_image, stream=True).raw).convert('RGB')
@@ -87,7 +89,7 @@ for key, value in no_intro_type.items():
 
             # Get colors from the buttons
             buttons_dict = {}
-            buttons = driver.find_elements_by_xpath("/html/body/div/section/article/div/form/input[@type='submit']")
+            buttons = driver.find_elements(by='xpath', value="/html/body/div/section/article/div/form/input[@type='submit']")
             for btn in buttons:
                 # Extract color from the button's background css property
                 r, g, b = btn.value_of_css_property("background-color")[4:-1].split(', ')
@@ -130,8 +132,21 @@ for key, value in no_intro_type.items():
         archive_full = os.path.join(dir_path, archive_name)
         os.rename(os.path.join(dir_path, name), os.path.join(dir_path, archive_full))
 
-        # load zip file
-        archive = zipfile.ZipFile(os.path.join(dir_path, archive_full))
+        # load & extract zip file, there is currently no way to remove files from zip archive
+        orig_archive  = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='r')
+        orig_archive.extractall()
+        orig_archive.close()
+        # delete unneeded files
+        os.remove('hashes.txt')
+        os.remove('index.txt')
+
+        # build new zip archive
+        archive = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
+        for x in os.listdir(path='.'):
+            if x.endswith(".dat"):
+                print(x)
+                archive.write(x)
+                os.remove(x)
 
         # clrmamepro XML file
         tag_clrmamepro = ET.Element('clrmamepro')
@@ -166,6 +181,10 @@ for key, value in no_intro_type.items():
 
             # Command XML tag
             ET.SubElement(tag_datfile, 'comment').text = '_'
+
+            print()
+
+        archive.close()
 
         # store clrmamepro XML file
         xmldata = ET.tostring(tag_clrmamepro).decode()
