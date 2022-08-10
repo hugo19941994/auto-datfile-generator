@@ -103,7 +103,7 @@ for key, value in no_intro_type.items():
             closest_button_name = min(buttons_dict, key=buttons_dict.get)
 
             # click the correct captcha color coded download button
-            driver.find_element_by_name(closest_button_name).click()
+            driver.find_element(by='name', value=closest_button_name).click()
 
 
         # wait until file is found
