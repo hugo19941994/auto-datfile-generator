@@ -17,9 +17,9 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 regex = {
-    'date': r'[0-9]{8}-[0-9]{6}',
-    'name': r'(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)',
-    'filename': r'filename="(.*?)"',
+    'date'     : r'[0-9]{8}-[0-9]{6}',
+    'name'     : r'(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)',
+    'skipfiles': r'(.*?.)( \(#[0-9]{2,4}?.*\).dat)',
 }
 
 no_intro_type = {
@@ -69,7 +69,7 @@ for key, value in no_intro_type.items():
             captcha = True
         except NoSuchElementException:
             pass
-        print(f'Captcha: {captcha}')
+        print(f'Captcha: {captcha}\n')
 
         if not captcha:
             buttons = driver.find_elements(by='xpath', value="/html/body/div/section/article/div/form/input[@type='submit']")
@@ -136,17 +136,24 @@ for key, value in no_intro_type.items():
         orig_archive  = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='r')
         orig_archive.extractall()
         orig_archive.close()
-        # delete unneeded files
-        os.remove('hashes.txt')
-        os.remove('index.txt')
+
+        #delete unneeded files
+        for x in os.listdir(path='./'):
+            if re.fullmatch(regex['skipfiles'], x):
+                print('SKIPPING: ', x)
+                os.remove(x)
+
+        print('\nBuilding new archive ...\n')
 
         # build new zip archive
         archive = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
         for x in os.listdir(path='.'):
             if x.endswith(".dat"):
-                print(x)
+                print('Adding to Archive: ', x)
                 archive.write(x)
                 os.remove(x)
+
+        print('\nCreating new clrmamepro datfile ...\n')
 
         # clrmamepro XML file
         tag_clrmamepro = ET.Element('clrmamepro')
