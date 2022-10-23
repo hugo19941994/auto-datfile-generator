@@ -19,7 +19,7 @@ import zipfile
 regex = {
     'date'     : r'[0-9]{8}-[0-9]{6}',
     'name'     : r'(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)',
-    'skipfiles': r'(.*?.)( \(#[0-9]{2,4}?.*\).dat)',
+    'skipfiles': r'(.*?.)( \(#[0-9]{1,4}?.*\).dat)',
 }
 
 no_intro_type = {
