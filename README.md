@@ -20,13 +20,15 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.xml`
 
-### Hardware Target Game Database
+<!-- disabled for CI failures -->
+<!-- ### Hardware Target Game Database
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml` -->
 
-### Custom dats.site
+<!-- disabled for CI failures -->
+<!-- ### Custom dats.site
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/dats-site.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/dats-site.xml` -->
 
 ![clrmamepro screenshot](./img/clrmamepro.png)
 
