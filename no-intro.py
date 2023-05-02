@@ -31,14 +31,15 @@ for key, value in no_intro_type.items():
 
     # Dowload no-intro pack using selenium
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    options=Options()
-    options.set_preference("browser.download.folderList", 2);
-    options.set_preference("browser.download.manager.showWhenStarting", False);
-    options.set_preference("browser.download.dir", dir_path);
-    options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip");
-    options.headless = True
 
-    service = Service()
+    options = webdriver.FirefoxOptions()
+    options.set_preference("browser.download.folderList", 2)
+    options.set_preference("browser.download.manager.showWhenStarting", False)
+    options.set_preference("browser.download.dir", dir_path)
+    options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip")
+    options.add_argument  ("-headless")
+
+    service = webdriver.FirefoxService(log_output = "firefox-webdriver.log" , service_args = ["--log", "debug"])
 
     driver = webdriver.Firefox(service=service, options=options)
     driver.implicitly_wait(10)
