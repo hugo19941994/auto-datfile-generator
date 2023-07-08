@@ -1,9 +1,8 @@
 # Auto DAT file generator
 
-![Daily WWW clrmamepro profiles](https://github.com/hugo19941994/auto-datfile-generator/workflows/Daily%20WWW%20clrmamepro%20profiles/badge.svg)
+![Daily Rebuild Status](https://github.com/hugo19941994/auto-datfile-generator/actions/workflows/daily-rebuild.yml/badge.svg)
 
 WWW profiles to use in clrmamepro for the standard No-Intro and Redump sets.
-
 Refreshes once every 24h automatically.
 
 ## URLs

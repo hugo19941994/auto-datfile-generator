@@ -1,0 +1,60 @@
+name: Daily rebuild
+
+on:
+  push:
+    branches:
+      - 'master'
+  schedule:
+    - cron:  '0 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pipenv'
+
+      - name: Setup base environment
+        run: |
+          echo "timestamp=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Install pipenv
+        run: curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
+      - name: Setup pipenv environment
+        run: pipenv install --deploy
+
+      - name: Download dats and generate profile.xml for Redump
+        if: ${{ ! cancelled() }}
+        run: pipenv run python3 redump.py
+
+      - name: Download dats and generate profile.xml for No-Intro
+        if: ${{ ! cancelled() }}
+        run: pipenv run python3 no-intro.py
+
+        # HTGD disabled for now
+        #- name: Download dats and generate profile.xml for HTGD
+        #  if: ${{ ! cancelled() }}
+        #  run: pipenv run python3 smdb.py
+        
+        # dats.site disabled for now
+        #- name: Download dats and generate profile.xml for dats.site
+        #  if: ${{ ! cancelled() }}
+        #  run: pipenv run python3 dats-site.py
+
+      - name: Create release
+        if: ${{ ! cancelled() }}
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "*.xml,*.zip"
+          commit: master
+          name: Daily_Rebuild
+          makeLatest: true
+          tag: Daily_Rebuild
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: "Automatically released by github actions"
