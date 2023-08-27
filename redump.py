@@ -1,128 +1,103 @@
-import zipfile
-from io import BytesIO, StringIO
-from datetime import date
-from time import sleep
-import xml.etree.ElementTree as ET
-from lxml import objectify
 import re
+import xml.etree.ElementTree as ET
+import zipfile
+from io import BytesIO
+from time import sleep
 import requests
 
-
 # Config
-url_home = 'http://redump.org/'
-url_downloads = 'http://redump.org/downloads/'
-regex = {
-    'datfile': r'<a href="/datfile/(.*?)">',
-    'date': r'\) \((.*?)\)\.',
-    'name': r'filename="(.*?) Datfile',
-    'filename': r'filename="(.*?)"',
-}
+URL_HOME      = "http://redump.org/"
+URL_DOWNLOADS = "http://redump.org/downloads/"
+XML_FILENAME  = "redump.xml"
+XML_URL       = "https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.zip"
 
-xml_filename = 'redump.xml'
+regex = {
+    "datfile"  : r'<a href="/datfile/(.*?)">',
+    "date"     : r"\) \((.*?)\)\.",
+    "name"     : r'filename="(.*?) Datfile',
+    "filename" : r'filename="(.*?)"',
+}
 
 
 def _find_dats():
-    download_page = requests.get(url_downloads)
+    download_page = requests.get(URL_DOWNLOADS, timeout=30)
     download_page.raise_for_status()
 
-    dat_files = re.findall(regex['datfile'], download_page.text)
+    dat_files = re.findall(regex["datfile"], download_page.text)
     return dat_files
 
 
-def Update_XML():
+def update_XML():
     dat_list = _find_dats()
 
     # zip file to store all DAT files
-    zipObj = zipfile.ZipFile(f'redump.zip', 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
+    zip_object = zipfile.ZipFile("redump.zip", "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9)
 
     # clrmamepro XML file
-    tag_clrmamepro = ET.Element('clrmamepro')
+    tag_clrmamepro = ET.Element("clrmamepro")
 
     for dat in dat_list:
-        print(f'Downloading {dat}')
+        print(f"Downloading {dat}")
         # section for this dat in the XML file
-        tag_datfile = ET.SubElement(tag_clrmamepro, 'datfile')
+        tag_datfile = ET.SubElement(tag_clrmamepro, "datfile")
 
-        response = requests.get(url_home+'datfile/'+dat)
-        content_header = response.headers['Content-Disposition']
+        response = requests.get(URL_HOME + "datfile/" + dat, timeout=30)
+        content_header = response.headers["Content-Disposition"]
 
         # XML version
-        dat_date = re.findall(regex['date'], content_header)[0]
-        ET.SubElement(tag_datfile, 'version').text = dat_date
+        dat_date = re.findall(regex["date"], content_header)[0]
+        ET.SubElement(tag_datfile, "version").text = dat_date
 
         # XML name & description
-        tempName = re.findall(regex['name'], content_header)[0]
+        temp_name = re.findall(regex["name"], content_header)[0]
         # trim the - from the end (if exists)
-        if (tempName.endswith('-')):
-            tempName = tempName[:-2]
-        elif (tempName.endswith('BIOS')):
-            tempName = tempName + ' Images'
-        ET.SubElement(tag_datfile, 'name').text = tempName
-        ET.SubElement(tag_datfile, 'description').text = tempName
+        if temp_name.endswith("-"):
+            temp_name = temp_name[:-2]
+        elif temp_name.endswith("BIOS"):
+            temp_name = temp_name + " Images"
+        ET.SubElement(tag_datfile, "name").text = temp_name
+        ET.SubElement(tag_datfile, "description").text = temp_name
 
         # URL tag in XML
-        ET.SubElement(
-            tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.zip'
+        ET.SubElement(tag_datfile, "url").text = XML_URL
 
         # File tag in XML
-        originalFileName = re.findall(regex['filename'], content_header)[0]
-        fileName = f'{originalFileName[:-4]}.dat'
-        ET.SubElement(tag_datfile, 'file').text = fileName
+        original_filename = re.findall(regex["filename"], content_header)[0]
+        filename = f"{original_filename[:-4]}.dat"
+        ET.SubElement(tag_datfile, "file").text = filename
 
         # Author tag in XML
-        ET.SubElement(tag_datfile, 'author').text = 'redump.org'
+        ET.SubElement(tag_datfile, "author").text = "redump.org"
 
         # Command XML tag
-        ET.SubElement(tag_datfile, 'comment').text = '_'
+        ET.SubElement(tag_datfile, "comment").text = "_"
 
         # Get the DAT file
-        datfile_name = f'{fileName[:-4]}.dat'
-        print(f'DAT filename: {datfile_name}')
-        if originalFileName.endswith('.zip'):
+        datfile_name = f"{filename[:-4]}.dat"
+        print(f"DAT filename: {datfile_name}")
+        if original_filename.endswith(".zip"):
             # extract datfile from zip to store in the DB zip
             zipdata = BytesIO()
             zipdata.write(response.content)
             archive = zipfile.ZipFile(zipdata)
-            zipObj.writestr(datfile_name, archive.read(datfile_name))
+            zip_object.writestr(datfile_name, archive.read(datfile_name))
         else:
             # add datfile to DB zip file
             datfile = response.text
-            zipObj.writestr(datfile_name, datfile)
+            zip_object.writestr(datfile_name, datfile)
         print()
         sleep(5)
 
-    # Add the Wii dat from gc-forever
-    print("Adding Wii dat from gc-forever")
-    r = requests.get('https://www.gc-forever.com/datfile/wii.dat')
-    r.raise_for_status()
-    tree = objectify.parse(StringIO(r.text))
-
-    name = tree.getroot().header.name.text
-    description = tree.getroot().header.description.text
-    version = tree.getroot().header.version.text
-
-    tag_datfile = ET.SubElement(tag_clrmamepro, 'datfile')
-    ET.SubElement(tag_datfile, 'version').text = version
-    ET.SubElement(tag_datfile, 'name').text = name
-    ET.SubElement(tag_datfile, 'description').text = name
-    ET.SubElement(tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.zip'
-    ET.SubElement(tag_datfile, 'file').text = f"{description}.dat"
-    ET.SubElement(tag_datfile, 'author').text = 'redump.org'
-    ET.SubElement(tag_datfile, 'comment').text = '_'
-
-    zipObj.writestr(f"{description}.dat", r.text)
-
     # store clrmamepro XML file
     xmldata = ET.tostring(tag_clrmamepro).decode()
-    xmlfile = open(xml_filename, 'w')
-    xmlfile.write(xmldata)
 
-    # Save DB zip file
-    zipObj.close()
-    print('Finished')
+    with open(XML_FILENAME, "w", encoding="utf-8") as xmlfile:
+        xmlfile.write(xmldata)
+
+    print("Finished")
 
 
 try:
-    Update_XML()
+    update_XML()
 except KeyboardInterrupt:
     pass
