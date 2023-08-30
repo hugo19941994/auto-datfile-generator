@@ -112,7 +112,7 @@ for key, value in no_intro_type.items():
     name = None
     time_slept = 0
     while not found:
-        if time_slept > 360:
+        if time_slept > 900:
             raise Exception(f'No-Intro {key} zip file not found')
 
         for f in os.listdir(dir_path):
