@@ -1,35 +1,30 @@
-from PIL import Image
-from colormath.color_conversions import convert_color
-from colormath.color_diff import delta_e_cie1976
-from colormath.color_objects import LabColor, sRGBColor
-from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver import Firefox
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import Select
-from time import sleep
 import hashlib
 import os
 import re
-import requests
 import xml.etree.ElementTree as ET
 import zipfile
+from time import sleep
+
+import requests
+from colormath.color_conversions import convert_color
+from colormath.color_diff import delta_e_cie1976
+from colormath.color_objects import LabColor, sRGBColor
+from PIL import Image
+from selenium import webdriver
 
 regex = {
-    'date'     : r'[0-9]{8}-[0-9]{6}',
-    'name'     : r'(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)',
-    'skipfiles': r'(.*?.)( \(#[0-9]{1,4}?.*\).dat)',
+    "date"     : r"[0-9]{8}-[0-9]{6}",
+    "name"     : r"(.*?.)( \([0-9]{8}-[0-9]{6}\).dat)"
 }
 
 no_intro_type = {
-    'standard': 'standard',
-    'parent-clone': 'xml'
+    "standard"     : "standard",
+    "parent-clone" : "xml"
 }
 
 for key, value in no_intro_type.items():
 
-    # Dowload no-intro pack using selenium
+    # Download no-intro pack using selenium
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     options = webdriver.FirefoxOptions()
@@ -44,35 +39,39 @@ for key, value in no_intro_type.items():
     driver = webdriver.Firefox(service=service, options=options)
     driver.implicitly_wait(10)
 
+    # load website
     driver.get("https://datomatic.no-intro.org")
+    print("Loaded no-intro datomatic ...")
 
-    # select downloads
+    # select "DOWNLOAD"
     driver.find_element(by='xpath', value='/html/body/div/header/nav/ul/li[3]/a').click()
 
-    # select daily downloads
+    # select "daily"
     driver.find_element(by='xpath', value='/html/body/div/section/article/table[1]/tbody/tr/td/a[5]').click()
 
-    # find the type of dat file
-    x = driver.find_element(by='name', value='dat_type')
-    drop = Select(x)
+    #set the type of dat file
+    if key == 'standard' :
+        driver.find_element(by='xpath', value="//input[@name='dat_type' and @value='standard']").click()
+    if key == 'parent-clone' :
+        driver.find_element(by='xpath', value="//input[@name='dat_type' and @value='xml']").click()
+    print(f'Set dat type to {key} ...')
 
-    # Select by value
-    drop.select_by_value(value)
+    # select "Request"
+    driver.find_element(by='name', value='valentine_day').click()
     sleep(5)
 
-    # click the prepare button
-    driver.find_element(by='xpath', value=f'/html/body/div/section/article/div/form/input[1]').click()
+    # select "Download"
+    driver.find_element(by="name", value="lazy_mode").click()
 
-    captcha = False
-
+    CAPTCHA = False
     try:
         captcha_image = driver.find_element(by='xpath', value='/html/body/div/section/article/div/form/img').get_attribute('src')
-        captcha = True
+        CAPTCHA = True
     except NoSuchElementException:
         pass
-    print(f'Captcha: {captcha}\n')
+    print(f'Captcha: {CAPTCHA}\n')
 
-    if not captcha:
+    if not CAPTCHA:
         buttons = driver.find_elements(by='xpath', value="/html/body/div/section/article/div/form/input[@type='submit']")
         if len(buttons) == 1:
             btn_name = buttons[0].get_attribute('name')
@@ -106,56 +105,87 @@ for key, value in no_intro_type.items():
         # click the correct captcha color coded download button
         driver.find_element(by='name', value=closest_button_name).click()
 
+    print('Waiting for download to complete ...')
 
     # wait until file is found
-    found = False
-    name = None
-    time_slept = 0
-    while not found:
-        if time_slept > 900:
-            raise Exception(f'No-Intro {key} zip file not found')
+    FOUND = False
+    NAME = None
+    TIME_SLEPT = 0
+    while not FOUND:
+        if TIME_SLEPT > 900:
+            raise Exception(f'No-Intro {key} zip file not found, download failed')
 
         for f in os.listdir(dir_path):
             if 'No-Intro Love Pack' in f and not f.endswith('.part'):
                 try:
                     zipfile.ZipFile(os.path.join(dir_path, f))
-                    name = f
-                    found = True
+                    NAME = f
+                    FOUND = True
+                    print('No-Intro zip file download completed ...')
                     break
                 except zipfile.BadZipfile:
                     pass
 
         # wait 5 seconds
         sleep(5)
-        time_slept += 5
+        TIME_SLEPT += 5
 
+    #setup archive path and rename
     archive_name = 'no-intro.zip' if key == 'standard' else f'no-intro_{key}.zip'
     archive_full = os.path.join(dir_path, archive_name)
-    os.rename(os.path.join(dir_path, name), os.path.join(dir_path, archive_full))
+    os.rename(os.path.join(dir_path, NAME), os.path.join(dir_path, archive_full))
 
     # load & extract zip file, there is currently no way to remove files from zip archive
-    orig_archive  = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='r')
-    orig_archive.extractall()
-    orig_archive.close()
+    with zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='r') as orig_archive:
+        orig_archive.extractall()
+        # delete unneeded files
+        os.remove('index.txt')
 
-    #delete unneeded files
-    for x in os.listdir(path='./'):
-        if re.fullmatch(regex['skipfiles'], x):
-            print('SKIPPING: ', x)
-            os.remove(x)
-
-    print('\nBuilding new archive ...\n')
-
-    # build new zip archive
-    archive = zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9)
-    for x in os.listdir(path='.'):
-        if x.endswith(".dat"):
-            print('Adding to Archive: ', x)
-            archive.write(x)
-            os.remove(x)
+    print('Building new archive ...')
+    with zipfile.ZipFile(os.path.join(dir_path, archive_full), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for f in os.listdir(dir_path):
+            if 'No-Intro' in f:
+                print('\nAdding No-Intro dats ...')
+                os.chdir('./No-Intro')
+                for x in os.listdir(path='.'):
+                    if x.endswith(".dat"):
+                        print('Adding to Archive: ', x)
+                        archive.write(x)
+                        os.remove(x)
+                os.chdir('../')
+                os.rmdir('./No-Intro')
+            if 'Non-Redump' in f:
+                print('\nAdding No-Intro Non-Redump dats ...')
+                os.chdir('./Non-Redump')
+                for x in os.listdir(path='.'):
+                    if x.endswith(".dat"):
+                        print('Adding to Archive: ', x)
+                        archive.write(x)
+                        os.remove(x)
+                os.chdir('../')
+                os.rmdir('./Non-Redump')
+            if 'Source Code' in f:
+                print('\nAdding No-Intro Source Code dats ...')
+                os.chdir('./Source Code')
+                for x in os.listdir(path='.'):
+                    if x.endswith(".dat"):
+                        print('Adding to Archive: ', x)
+                        archive.write(x)
+                        os.remove(x)
+                os.chdir('../')
+                os.rmdir('./Source Code')
+            if 'Unofficial' in f:
+                print('\nAdding No-Intro Unofficial dats ...')
+                os.chdir('./Unofficial')
+                for x in os.listdir(path='.'):
+                    if x.endswith(".dat"):
+                        print('Adding to Archive: ', x)
+                        archive.write(x)
+                        os.remove(x)
+                os.chdir('../')
+                os.rmdir('./Unofficial')
 
     print('\nCreating new clrmamepro datfile ...\n')
-
     # clrmamepro XML file
     tag_clrmamepro = ET.Element('clrmamepro')
     for dat in archive.namelist():
@@ -175,8 +205,7 @@ for key, value in no_intro_type.items():
         print(tempName)
 
         # URL tag in XML
-        ET.SubElement(
-            tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/{archive_name}'
+        ET.SubElement(tag_datfile, 'url').text = f'https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/{archive_name}'
 
         # File tag in XML
         fileName = dat
@@ -197,5 +226,8 @@ for key, value in no_intro_type.items():
     # store clrmamepro XML file
     xmldata = ET.tostring(tag_clrmamepro).decode()
     xml_filename = 'no-intro.xml' if key == 'standard' else f'no-intro_{key}.xml'
-    xmlfile = open(xml_filename, 'w')
-    xmlfile.write(xmldata)
+
+    with open(xml_filename, 'w', encoding="utf-8") as xmlfile:
+        xmlfile.write(xmldata)
+
+    print('Finished')
