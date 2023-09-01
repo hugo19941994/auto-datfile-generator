@@ -64,7 +64,7 @@ for key, value in no_intro_type.items():
     TIME_SLEPT = 0
     while not FOUND:
         if TIME_SLEPT > 900:
-            raise Exception(f"No-Intro {key} zip file not found, download failed")
+            raise FileNotFoundError(f"No-Intro {key} zip file not found, timeout reached")
 
         for f in os.listdir(dir_path):
             if "No-Intro Love Pack" in f and not f.endswith(".part"):
@@ -80,6 +80,9 @@ for key, value in no_intro_type.items():
         # wait 5 seconds
         sleep(5)
         TIME_SLEPT += 5
+
+    if NAME == None:
+        raise FileNotFoundError(f"No-Intro {key} zip file not found, download failed")
 
     #setup archive path and rename
     archive_name = "no-intro.zip" if key == "standard" else f"no-intro_{key}.zip"
