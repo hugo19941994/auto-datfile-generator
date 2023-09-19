@@ -6,12 +6,14 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+# redump.py, dats-site.py, smdb.py
 requests = "*"
-lxml = "*"
-chardet = "*"
+
+# no-intro.py
 selenium = "*"
-colormath = "*"
-pillow = "*"
+
+# smdb.py
+lxml = "*"
 
 [requires]
 python_version = "3.9"
