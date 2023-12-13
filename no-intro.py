@@ -51,7 +51,7 @@ for key, value in no_intro_type.items():
     print(f"Set dat type to {key} ...")
 
     # select "Request"
-    driver.find_element(by="name", value="valentine_day").click()
+    driver.find_element(by="name", value="daily_day").click()
     sleep(5)
 
     # select "Download"
