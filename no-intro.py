@@ -55,7 +55,7 @@ for key, value in no_intro_type.items():
     sleep(5)
 
     # select "Download"
-    driver.find_element(by="name", value="lazy_mode").click()
+    driver.find_element(by="xpath", value="//input[@value='Download']").click()
     print("Waiting for download to complete ...")
 
     # wait until file is found
