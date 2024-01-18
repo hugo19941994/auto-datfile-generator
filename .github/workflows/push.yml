@@ -37,9 +37,10 @@ jobs:
           id: generator_no_intro
           run: pipenv run python3 no-intro.py
 
-        - name: Download dats and generate profile.xml for HTGD
-          id: generator_smdb
-          run: pipenv run python3 smdb.py
+        # HTGD disabled for now
+        #- name: Download dats and generate profile.xml for HTGD
+        #  id: generator_smdb
+        #  run: pipenv run python3 smdb.py
 
         - name: Download dats and generate profile.xml for dats.site
           id: generator_dats_site
