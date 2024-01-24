@@ -1,9 +1,8 @@
 # Auto DAT file generator
 
-![Daily WWW clrmamepro profiles](https://github.com/hugo19941994/auto-datfile-generator/workflows/Daily%20WWW%20clrmamepro%20profiles/badge.svg)
+![Daily Rebuild Status](https://github.com/hugo19941994/auto-datfile-generator/actions/workflows/daily-rebuild.yml/badge.svg)
 
 WWW profiles to use in clrmamepro for the standard No-Intro and Redump sets.
-
 Refreshes once every 24h automatically.
 
 ## URLs
@@ -20,13 +19,15 @@ Refreshes once every 24h automatically.
 
 `https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/redump.xml`
 
-### Hardware Target Game Database
+<!-- disabled for CI failures -->
+<!-- ### Hardware Target Game Database
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/smdb.xml` -->
 
-### Custom dats.site
+<!-- disabled for CI failures -->
+<!-- ### Custom dats.site
 
-`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/dats-site.xml`
+`https://github.com/hugo19941994/auto-datfile-generator/releases/latest/download/dats-site.xml` -->
 
 ![clrmamepro screenshot](./img/clrmamepro.png)
 
