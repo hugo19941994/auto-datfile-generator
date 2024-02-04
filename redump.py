@@ -20,7 +20,7 @@ regex = {
 
 
 def _find_dats():
-    download_page = requests.get(URL_DOWNLOADS, timeout=30)
+    download_page = requests.get(URL_DOWNLOADS, timeout=150)
     download_page.raise_for_status()
 
     dat_files = re.findall(regex["datfile"], download_page.text)
@@ -41,7 +41,7 @@ def update_XML():
         # section for this dat in the XML file
         tag_datfile = ET.SubElement(tag_clrmamepro, "datfile")
 
-        response = requests.get(URL_HOME + "datfile/" + dat, timeout=30)
+        response = requests.get(URL_HOME + "datfile/" + dat, timeout=150)
         content_header = response.headers["Content-Disposition"]
 
         # XML version
