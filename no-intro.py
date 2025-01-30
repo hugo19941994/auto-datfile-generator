@@ -45,13 +45,13 @@ for key, value in no_intro_type.items():
 
     #set the type of dat file
     if key == "standard" :
-        driver.find_element(by="xpath", value="//input[@name='dat_type' and @value='standard']").click()
+        driver.find_element(by="xpath", value="//input[@name='dat_type' and @value='dat']").click()
     if key == "parent-clone" :
-        driver.find_element(by="xpath", value="//input[@name='dat_type' and @value='xml']").click()
+        driver.find_element(by="xpath", value="//input[@name='dat_type' and @value='pc']").click()
     print(f"Set dat type to {key} ...")
 
     # select "Request"
-    driver.find_element(by="name", value="daily_day").click()
+    driver.find_element(by="name", value="updated_daily").click()
     sleep(5)
 
     # select "Download"
