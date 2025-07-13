@@ -51,11 +51,14 @@ for key, value in no_intro_type.items():
     print(f"Set dat type to {key} ...")
 
     # select "Request"
-    driver.find_element(by="xpath", value="//input[@value='Request']").click()
+    if key == "standard" :
+        driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input[5]").click()
+    if key == "parent-clone" :
+        driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input[4]").click()
     sleep(5)
 
     # select "Download"
-    driver.find_element(by="xpath", value="//input[@value='Download!']").click()
+    driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input").click()
     print("Waiting for download to complete ...")
 
     # wait until file is found
