@@ -52,13 +52,13 @@ for key, value in no_intro_type.items():
 
     # select "Request"
     if key == "standard" :
-        driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input[5]").click()
+        driver.find_element(by="xpath", value="/html/body/div/section/article/div/form/input[5]").click()
     if key == "parent-clone" :
-        driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input[4]").click()
+        driver.find_element(by="xpath", value="/html/body/div/section/article/div/form/input[4]").click()
     sleep(5)
 
     # select "Download"
-    driver.find_element(by="xpath", value="/html/body/div[1]/section/article/div/form/input").click()
+    driver.find_element(by="xpath", value="/html/body/div/section/article/div/form[2]/input").click()
     print("Waiting for download to complete ...")
 
     # wait until file is found
